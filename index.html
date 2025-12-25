@@ -488,7 +488,6 @@
 
         function hardDrop() {
             while (currentPiece.move(0, 1)) {
-                score += 2;
             }
             mergePiece();
             clearLines();
@@ -546,10 +545,7 @@
                     currentPiece.move(1, 0);
                     break;
                 case 'ArrowDown':
-                    if (currentPiece.move(0, 1)) {
-                        score += 1;
-                        updateScore();
-                    }
+                    currentPiece.move(0, 1);
                     break;
                 case 'ArrowUp':
                     currentPiece.rotate();
