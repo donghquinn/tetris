@@ -46,7 +46,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add SSH host to known_hosts
-        run: ssh-keyscan -p {{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Create env file
         run: |
@@ -59,17 +59,17 @@ jobs:
       - name: mkdir
         run: |
           # 서버에 디렉토리 생성
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}  -p {{ secrets.SSH_PORT }} "mkdir -p ${{ secrets.DIRECTORY }}"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}  -p ${{ secrets.SSH_PORT }} "mkdir -p ${{ secrets.DIRECTORY }}"
 
       - name: Copy env
         run: |
           # env 파일 복사
-          scp -P {{ secrets.SSH_PORT }} .env  ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DIRECTORY }}/.env.prod
-          scp -P {{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DIRECTORY }}/docker-compose.yml
+          scp -P ${{ secrets.SSH_PORT }} .env  ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DIRECTORY }}/.env.prod
+          scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DIRECTORY }}/docker-compose.yml
 
       - name: Deploy to Ubuntu Server
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}  -p {{ secrets.SSH_PORT }} "cd ${{ secrets.DIRECTORY }} && \
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}  -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.DIRECTORY }} && \
             export IMAGE_NAME=${{ secrets.DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}/${{ secrets.REPO_NAME}} && \
             export CONTAINER_NAME=${{ secrets.CONTAINER_NAME }} && \
             docker compose pull && \
