@@ -141,54 +141,6 @@ export default function Index() {
     ctx.fillRect(x * size, y * size, size / 4, size / 4);
   }, []);
 
-  const drawBoard = useCallback((ctx: CanvasRenderingContext2D) => {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(0, 0, COLS * BLOCK_SIZE, ROWS * BLOCK_SIZE);
-
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
-        if (boardRef.current[y][x]) {
-          drawBlock(ctx, x, y, COLORS[boardRef.current[y][x]]!);
-        }
-      }
-    }
-  }, [drawBlock]);
-
-  const drawPiece = useCallback((
-    ctx: CanvasRenderingContext2D,
-    piece: Piece,
-    offsetX = 0,
-    offsetY = 0,
-    size = BLOCK_SIZE
-  ) => {
-    for (let y = 0; y < piece.shape.length; y++) {
-      for (let x = 0; x < piece.shape[y].length; x++) {
-        if (piece.shape[y][x]) {
-          drawBlock(ctx, piece.x + x + offsetX, piece.y + y + offsetY, piece.color, size);
-        }
-      }
-    }
-  }, [drawBlock]);
-
-  const drawGhostPiece = useCallback((ctx: CanvasRenderingContext2D, piece: Piece) => {
-    const ghostY = getGhostY(piece);
-
-    for (let y = 0; y < piece.shape.length; y++) {
-      for (let x = 0; x < piece.shape[y].length; x++) {
-        if (piece.shape[y][x]) {
-          const posX = (piece.x + x) * BLOCK_SIZE;
-          const posY = (ghostY + y) * BLOCK_SIZE;
-
-          ctx.strokeStyle = piece.color;
-          ctx.lineWidth = 2;
-          ctx.strokeRect(posX, posY, BLOCK_SIZE, BLOCK_SIZE);
-
-          ctx.fillStyle = piece.color + '20';
-          ctx.fillRect(posX, posY, BLOCK_SIZE, BLOCK_SIZE);
-        }
-      }
-    }
-  }, [getGhostY]);
 
   const drawNext = useCallback(() => {
     const nextCanvas = nextCanvasRef.current;
@@ -355,10 +307,45 @@ export default function Index() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    drawBoard(ctx);
-    drawGhostPiece(ctx, currentPiece);
-    drawPiece(ctx, currentPiece);
-  }, [board, currentPiece, drawBoard, drawGhostPiece, drawPiece]);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw board
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, COLS * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        if (board[y][x]) {
+          drawBlock(ctx, x, y, COLORS[board[y][x]]!);
+        }
+      }
+    }
+
+    // Draw ghost piece
+    const ghostY = getGhostY(currentPiece);
+    for (let y = 0; y < currentPiece.shape.length; y++) {
+      for (let x = 0; x < currentPiece.shape[y].length; x++) {
+        if (currentPiece.shape[y][x]) {
+          const posX = (currentPiece.x + x) * BLOCK_SIZE;
+          const posY = (ghostY + y) * BLOCK_SIZE;
+          ctx.strokeStyle = currentPiece.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(posX, posY, BLOCK_SIZE, BLOCK_SIZE);
+          ctx.fillStyle = currentPiece.color + '20';
+          ctx.fillRect(posX, posY, BLOCK_SIZE, BLOCK_SIZE);
+        }
+      }
+    }
+
+    // Draw current piece
+    for (let y = 0; y < currentPiece.shape.length; y++) {
+      for (let x = 0; x < currentPiece.shape[y].length; x++) {
+        if (currentPiece.shape[y][x]) {
+          drawBlock(ctx, currentPiece.x + x, currentPiece.y + y, currentPiece.color);
+        }
+      }
+    }
+  }, [board, currentPiece, drawBlock, getGhostY]);
 
   useEffect(() => {
     if (gameOver || isPaused || !currentPiece) return;
