@@ -5,7 +5,6 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import "~/styles/game.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

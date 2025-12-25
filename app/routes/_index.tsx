@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { MetaFunction } from "@remix-run/node";
+import "~/styles/game.css";
 
 export const meta: MetaFunction = () => {
   return [
