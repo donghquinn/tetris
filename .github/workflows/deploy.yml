@@ -1,0 +1,77 @@
+name: Docker Build and Deploy
+
+on:
+  push:
+    branches: [main] # main 브랜치에 푸시될 때 실행
+  workflow_dispatch: # 수동으로 워크플로우 실행 가능
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }} # Docker 레지스트리 URL (예: ghcr.io, docker.io)
+          username: ${{ secrets.DOCKER_USERNAME }} # Docker 레지스트리 사용자 이름
+          password: ${{ secrets.DOCKER_PASSWORD }} # Docker 레지스트리 비밀번호/토큰
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}/${{ secrets.REPO_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH host to known_hosts
+        run: ssh-keyscan -p {{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create env file
+        run: |
+          cat > .env << EOF
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          EOF
+
+      # TODO 특정 위치에 파일 옮기기
+      - name: mkdir
+        run: |
+          # 서버에 디렉토리 생성
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}  -p {{ secrets.SSH_PORT }} "mkdir -p ${{ secrets.DIRECTORY }}"
+
+      - name: Copy env
+        run: |
+          # env 파일 복사
+          scp -P {{ secrets.SSH_PORT }} .env  ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DIRECTORY }}/.env.prod
+          scp -P {{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DIRECTORY }}/docker-compose.yml
+
+      - name: Deploy to Ubuntu Server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}  -p {{ secrets.SSH_PORT }} "cd ${{ secrets.DIRECTORY }} && \
+            export IMAGE_NAME=${{ secrets.DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}/${{ secrets.REPO_NAME}} && \
+            export CONTAINER_NAME=${{ secrets.CONTAINER_NAME }} && \
+            docker compose pull && \
+            docker compose down && \
+            docker compose up -d --force-recreate"
