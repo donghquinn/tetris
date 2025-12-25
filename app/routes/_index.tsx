@@ -64,6 +64,7 @@ export default function Index() {
   const currentPieceRef = useRef(currentPiece);
   const gameOverRef = useRef(gameOver);
   const isPausedRef = useRef(isPaused);
+  const pieceBagRef = useRef<number[]>([]);
 
   useEffect(() => {
     boardRef.current = board;
@@ -91,9 +92,21 @@ export default function Index() {
     };
   }, []);
 
-  const randomPiece = useCallback(() => {
-    return Math.floor(Math.random() * 7) + 1;
+  const shuffleBag = useCallback(() => {
+    const bag = [1, 2, 3, 4, 5, 6, 7];
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+    return bag;
   }, []);
+
+  const randomPiece = useCallback(() => {
+    if (pieceBagRef.current.length === 0) {
+      pieceBagRef.current = shuffleBag();
+    }
+    return pieceBagRef.current.pop()!;
+  }, [shuffleBag]);
 
   const collides = useCallback((piece: Piece, offsetX = 0, offsetY = 0): boolean => {
     for (let y = 0; y < piece.shape.length; y++) {
@@ -283,6 +296,7 @@ export default function Index() {
     setIsPaused(false);
     setNextPiece(null);
     setCurrentPiece(null);
+    pieceBagRef.current = [];
 
     setTimeout(() => {
       const nextType = randomPiece();
