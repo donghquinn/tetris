@@ -9,8 +9,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const COLS = 10;
-const ROWS = 20;
+const COLS = 12;
+const ROWS = 24;
 const BLOCK_SIZE = 30;
 
 const COLORS = [
@@ -306,8 +306,15 @@ export default function Index() {
     }, 0);
   }, [randomPiece, createPiece]);
 
+  const togglePause = useCallback(() => {
+    if (!gameOver) {
+      setIsPaused(prev => !prev);
+    }
+  }, [gameOver]);
+
   useEffect(() => {
     newPiece();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -389,12 +396,10 @@ export default function Index() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameOverRef.current && e.key !== 'p' && e.key !== 'P') return;
+      if (gameOverRef.current) return;
 
       if (e.key === 'p' || e.key === 'P') {
-        if (!gameOverRef.current) {
-          setIsPaused(prev => !prev);
-        }
+        togglePause();
         return;
       }
 
@@ -422,7 +427,7 @@ export default function Index() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [movePiece, rotatePiece, hardDrop]);
+  }, [movePiece, rotatePiece, hardDrop, togglePause]);
 
   return (
     <div className="game-container">
@@ -477,9 +482,14 @@ export default function Index() {
             <p><span>Rotate</span><span className="key">↑</span></p>
             <p><span>Pause</span><span className="key">P</span></p>
           </div>
-          <button className="reset-button" onClick={restartGame}>
-            Reset Game
-          </button>
+          <div className="button-group">
+            <button className="pause-button" onClick={togglePause}>
+              {isPaused ? 'Resume' : 'Pause'}
+            </button>
+            <button className="reset-button" onClick={restartGame}>
+              Reset Game
+            </button>
+          </div>
         </div>
       </div>
     </div>

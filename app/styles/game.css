@@ -166,13 +166,20 @@ canvas {
     font-weight: bold;
 }
 
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.start-button,
+.pause-button,
 .reset-button {
     width: 100%;
     padding: 15px;
     font-size: 18px;
     font-weight: bold;
     color: white;
-    background: rgba(255, 107, 107, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 10px;
     cursor: pointer;
@@ -181,12 +188,38 @@ canvas {
     letter-spacing: 1px;
 }
 
+.start-button {
+    background: rgba(76, 175, 80, 0.8);
+}
+
+.start-button:hover {
+    background: rgba(76, 175, 80, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.pause-button {
+    background: rgba(255, 152, 0, 0.8);
+}
+
+.pause-button:hover {
+    background: rgba(255, 152, 0, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+}
+
+.reset-button {
+    background: rgba(255, 107, 107, 0.8);
+}
+
 .reset-button:hover {
     background: rgba(255, 107, 107, 1);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
 }
 
+.start-button:active,
+.pause-button:active,
 .reset-button:active {
     transform: translateY(0);
 }
