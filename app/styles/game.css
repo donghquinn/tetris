@@ -73,6 +73,20 @@ canvas {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.combo-active {
+    color: #ffeb3b !important;
+    animation: comboGlow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes comboGlow {
+    from {
+        text-shadow: 0 0 5px #ffeb3b, 0 0 10px #ffeb3b, 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    to {
+        text-shadow: 0 0 10px #ffeb3b, 0 0 20px #ffeb3b, 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+}
+
 .next-piece-canvas {
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 5px;

@@ -55,6 +55,7 @@ export default function Index() {
   const [score, setScore] = useState(0);
   const [lines, setLines] = useState(0);
   const [level, setLevel] = useState(1);
+  const [combo, setCombo] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentPiece, setCurrentPiece] = useState<Piece | null>(null);
@@ -212,16 +213,30 @@ export default function Index() {
 
     if (linesCleared > 0) {
       const newLines = lines + linesCleared;
-      const points = [0, 100, 300, 500, 800][linesCleared];
+      const basePoints = [0, 100, 300, 500, 800][linesCleared];
       const newLevel = Math.floor(newLines / 10) + 1;
 
+      // Multi-line bonus (for clearing 2+ lines at once)
+      const multiLineBonus = [0, 0, 100, 300, 600][linesCleared];
+
+      // Combo bonus: increase combo and give bonus points
+      const newCombo = combo + 1;
+      const comboBonus = newCombo > 1 ? 50 * newCombo : 0;
+
+      // Total score = (base + multi-line bonus) * level + combo bonus * level
+      const totalPoints = (basePoints + multiLineBonus) * level + comboBonus * level;
+
       setLines(newLines);
-      setScore(prev => prev + points * level);
+      setScore(prev => prev + totalPoints);
       setLevel(newLevel);
+      setCombo(newCombo);
+    } else {
+      // Reset combo if no lines cleared
+      setCombo(0);
     }
 
-    return newBoard;
-  }, [lines, level]);
+    return { board: newBoard, linesCleared };
+  }, [lines, level, combo]);
 
   const rotatePiece = useCallback(() => {
     if (!currentPieceRef.current || gameOverRef.current || isPausedRef.current) return;
@@ -260,7 +275,7 @@ export default function Index() {
     }
 
     const mergedBoard = mergePiece(piece);
-    const clearedBoard = clearLines(mergedBoard);
+    const { board: clearedBoard } = clearLines(mergedBoard);
     setBoard(clearedBoard);
 
     const nextType = randomPiece();
@@ -292,6 +307,7 @@ export default function Index() {
     setScore(0);
     setLines(0);
     setLevel(1);
+    setCombo(0);
     setGameOver(false);
     setIsPaused(false);
     setNextPiece(null);
@@ -376,7 +392,7 @@ export default function Index() {
     const interval = setInterval(() => {
       if (!movePiece(0, 1)) {
         const mergedBoard = mergePiece(currentPieceRef.current!);
-        const clearedBoard = clearLines(mergedBoard);
+        const { board: clearedBoard } = clearLines(mergedBoard);
         setBoard(clearedBoard);
 
         const nextType = randomPiece();
@@ -463,6 +479,10 @@ export default function Index() {
           <div className="info-box">
             <h2>Lines</h2>
             <p>{lines}</p>
+          </div>
+          <div className="info-box">
+            <h2>Combo</h2>
+            <p className={combo > 0 ? 'combo-active' : ''}>{combo > 0 ? `${combo}x` : '-'}</p>
           </div>
           <div className="info-box">
             <h2>Next</h2>
