@@ -328,16 +328,78 @@ canvas {
 }
 
 .leaderboard-button {
-    background: rgba(102, 126, 234, 0.8);
-    font-size: 20px;
-    padding: 18px;
-    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 22px;
+    padding: 20px 25px;
+    font-weight: 900;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6),
+                0 0 30px rgba(118, 75, 162, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: rankingPulse 2s ease-in-out infinite;
+}
+
+.leaderboard-button::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: rankingShine 3s linear infinite;
 }
 
 .leaderboard-button:hover {
-    background: rgba(102, 126, 234, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.8),
+                0 0 40px rgba(118, 75, 162, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+    animation: none;
+}
+
+.trophy-icon {
+    display: inline-block;
+    font-size: 24px;
+    animation: trophyBounce 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes rankingPulse {
+    0%, 100% {
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6),
+                    0 0 30px rgba(118, 75, 162, 0.3);
+    }
+    50% {
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.8),
+                    0 0 45px rgba(118, 75, 162, 0.5);
+    }
+}
+
+@keyframes rankingShine {
+    0% {
+        left: -50%;
+    }
+    100% {
+        left: 150%;
+    }
+}
+
+@keyframes trophyBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-3px) scale(1.1);
+    }
 }
 
 .leaderboard-overlay {

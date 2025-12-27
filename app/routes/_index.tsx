@@ -684,14 +684,14 @@ export default function Index() {
             <p><span>Pause</span><span className="key">P</span></p>
           </div>
           <div className="button-group">
+            <button className="leaderboard-button" onClick={toggleLeaderboard}>
+              <span className="trophy-icon">🏆</span> Ranking
+            </button>
             <button className="pause-button" onClick={togglePause}>
               {isPaused ? 'Resume' : 'Pause'}
             </button>
             <button className="reset-button" onClick={restartGame}>
               Reset Game
-            </button>
-            <button className="leaderboard-button" onClick={toggleLeaderboard}>
-              Ranking
             </button>
           </div>
         </div>
