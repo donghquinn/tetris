@@ -4,7 +4,7 @@ import "~/styles/game.css";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Tetris Game" },
+    { title: "Donghyun's Tetris" },
     { name: "description", content: "Play Tetris!" },
   ];
 };
@@ -349,9 +349,9 @@ export default function Index() {
   }, [gameOver]);
 
   const submitScore = useCallback(async (playerNickname: string, silent: boolean = false) => {
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = typeof window !== 'undefined' ? window.ENV?.API_URL : '';
     if (!apiUrl) {
-      console.error('VITE_API_URL is not configured');
+      console.error('API_URL is not configured');
       return;
     }
 
@@ -399,9 +399,9 @@ export default function Index() {
   }, [submitScore]);
 
   const fetchLeaderboard = useCallback(async () => {
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = typeof window !== 'undefined' ? window.ENV?.API_URL : '';
     if (!apiUrl) {
-      console.error('VITE_API_URL is not configured');
+      console.error('API_URL is not configured');
       return;
     }
 
