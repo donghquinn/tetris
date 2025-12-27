@@ -609,6 +609,8 @@ export default function Index() {
     let touchStartY = 0;
     let touchStartTime = 0;
     let lastMoveX = 0;
+    let hasDropped = false; // Prevent multiple drops in one gesture
+    let lastSoftDropTime = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
       if (gameOverRef.current || isPausedRef.current) return;
@@ -618,6 +620,7 @@ export default function Index() {
       touchStartY = touch.clientY;
       touchStartTime = Date.now();
       lastMoveX = touchStartX;
+      hasDropped = false;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
@@ -627,9 +630,10 @@ export default function Index() {
       const touch = e.touches[0];
       const deltaX = touch.clientX - lastMoveX;
       const deltaY = touch.clientY - touchStartY;
+      const currentTime = Date.now();
 
       // Horizontal movement (drag to move left/right)
-      if (Math.abs(deltaX) > 15) {
+      if (Math.abs(deltaX) > 20) {
         if (deltaX > 0) {
           movePiece(1, 0);
         } else {
@@ -638,10 +642,25 @@ export default function Index() {
         lastMoveX = touch.clientX;
       }
 
-      // Vertical swipe down (hard drop)
-      if (deltaY > 100) {
-        hardDrop();
-        touchStartTime = 0; // Prevent tap from triggering
+      // Vertical movement detection
+      if (deltaY > 30 && !hasDropped) {
+        const swipeDuration = currentTime - touchStartTime;
+        const swipeDistance = deltaY;
+        const velocity = swipeDistance / swipeDuration; // pixels per millisecond
+
+        // Fast swipe (velocity > 0.5 px/ms) = Hard Drop
+        if (velocity > 0.5 && swipeDistance > 80) {
+          hardDrop();
+          hasDropped = true;
+          touchStartTime = 0; // Prevent tap from triggering
+        }
+        // Slow drag = Soft Drop (move down incrementally)
+        else if (deltaY > 40 && currentTime - lastSoftDropTime > 150) {
+          const moved = movePiece(0, 1);
+          if (moved) {
+            lastSoftDropTime = currentTime;
+          }
+        }
       }
     };
 
@@ -651,10 +670,10 @@ export default function Index() {
       const touchDuration = Date.now() - touchStartTime;
       const touch = e.changedTouches[0];
       const deltaX = Math.abs(touch.clientX - touchStartX);
-      const deltaY = Math.abs(touch.clientY - touchStartY);
+      const deltaY = touch.clientY - touchStartY;
 
       // If it was a quick tap (not a drag), rotate
-      if (touchDuration < 200 && deltaX < 20 && deltaY < 20) {
+      if (touchDuration < 200 && deltaX < 20 && Math.abs(deltaY) < 20 && !hasDropped) {
         rotatePiece();
       }
     };
@@ -799,8 +818,9 @@ export default function Index() {
               <p><span>Pause</span><span className="key">P</span></p>
             </div>
             <div className="mobile-controls">
-              <p><span>Move</span><span className="key">Drag</span></p>
+              <p><span>Move</span><span className="key">Drag L/R</span></p>
               <p><span>Rotate</span><span className="key">Tap</span></p>
+              <p><span>Soft Drop</span><span className="key">Drag Down</span></p>
               <p><span>Hard Drop</span><span className="key">Swipe Down</span></p>
             </div>
           </div>
