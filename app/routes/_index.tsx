@@ -912,36 +912,40 @@ export default function Index() {
             height={ROWS * BLOCK_SIZE}
           />
 
-          {/* Mobile overlay stats */}
-          <div className="mobile-overlay-stats">
-            <div className="overlay-stat">
-              <span className="overlay-label">Lvl</span>
-              <span className="overlay-value">{level}</span>
+          {/* Mobile top bar */}
+          <div className="mobile-top-bar">
+            <div className="mobile-stat-badge">
+              <div className="stat-label">LVL</div>
+              <div className="stat-big-value">{level}</div>
             </div>
-            <div className="overlay-stat">
-              <span className="overlay-label">Score</span>
-              <span className="overlay-value">{score}</span>
+            <div className="mobile-stat-badge score-badge">
+              <div className="stat-label">SCORE</div>
+              <div className="stat-big-value">{score.toLocaleString()}</div>
             </div>
-            <div className="overlay-stat">
-              <span className="overlay-label">Lines</span>
-              <span className="overlay-value">{lines}</span>
+            <div className="mobile-stat-badge">
+              <div className="stat-label">LINES</div>
+              <div className="stat-big-value">{lines}</div>
             </div>
-            {combo > 0 && (
-              <div className="overlay-stat combo-highlight">
-                <span className="overlay-label">Combo</span>
-                <span className="overlay-value">{combo}x</span>
-              </div>
-            )}
           </div>
 
-          {/* Mobile next piece overlay */}
-          <div className="mobile-next-overlay">
-            <canvas
-              ref={nextCanvasRef}
-              width={100}
-              height={100}
-              className="next-piece-canvas"
-            />
+          {/* Mobile combo notification */}
+          {combo > 1 && (
+            <div className="mobile-combo-badge">
+              <span className="combo-text">{combo}x COMBO</span>
+            </div>
+          )}
+
+          {/* Mobile next piece - fancy card */}
+          <div className="mobile-next-card">
+            <div className="next-card-header">NEXT</div>
+            <div className="next-card-preview">
+              <canvas
+                ref={nextCanvasRef}
+                width={100}
+                height={100}
+                className="next-piece-canvas-mobile"
+              />
+            </div>
           </div>
 
           {isPaused && (
@@ -1021,18 +1025,19 @@ export default function Index() {
             </div>
           )}
 
-          {/* Mobile bottom controls */}
-          <div className="mobile-bottom-controls">
-            <button className="mobile-control-btn" onClick={toggleLeaderboard}>
-              🏆
-            </button>
-            <button className="mobile-control-btn" onClick={togglePause}>
-              {isPaused ? '▶' : '⏸'}
-            </button>
-            <button className="mobile-control-btn" onClick={restartGame}>
-              🔄
-            </button>
-          </div>
+        </div>
+
+        {/* Mobile control buttons - positioned outside game area */}
+        <div className="mobile-controls-wrapper">
+          <button className="mobile-corner-btn top-left" onClick={toggleLeaderboard}>
+            🏆
+          </button>
+          <button className="mobile-corner-btn top-right" onClick={togglePause}>
+            {isPaused ? '▶' : '⏸'}
+          </button>
+          <button className="mobile-corner-btn bottom-center" onClick={restartGame}>
+            🔄
+          </button>
         </div>
 
         {/* Desktop side panel */}
