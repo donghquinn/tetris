@@ -80,6 +80,11 @@ export default function Index() {
   const [leaderboardData, setLeaderboardData] = useState<ScoreItem[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
 
+  // Visual effects states
+  const [clearedLines, setClearedLines] = useState<number[]>([]);
+  const [comboPopup, setComboPopup] = useState<{ combo: number; timestamp: number } | null>(null);
+  const [animationTick, setAnimationTick] = useState(0);
+
   const boardRef = useRef(board);
   const currentPieceRef = useRef(currentPiece);
   const gameOverRef = useRef(gameOver);
@@ -243,14 +248,14 @@ export default function Index() {
 
   const clearLines = useCallback((currentBoard: Board) => {
     let linesCleared = 0;
-    const newBoard = [...currentBoard];
+    const clearedLineIndices: number[] = [];
+    const boardCopy = [...currentBoard];
 
+    // Identify which lines are full (but don't clear them yet)
     for (let y = ROWS - 1; y >= 0; y--) {
-      if (newBoard[y].every(cell => cell !== 0)) {
-        newBoard.splice(y, 1);
-        newBoard.unshift(Array(COLS).fill(0));
+      if (boardCopy[y].every(cell => cell !== 0)) {
+        clearedLineIndices.push(y);
         linesCleared++;
-        y++;
       }
     }
 
@@ -273,9 +278,33 @@ export default function Index() {
       setScore(prev => prev + totalPoints);
       setLevel(newLevel);
       setCombo(newCombo);
+
+      // Show visual effect first
+      setClearedLines(clearedLineIndices);
+
+      // Show combo popup if combo > 1
+      if (newCombo > 1) {
+        setComboPopup({ combo: newCombo, timestamp: Date.now() });
+        setTimeout(() => setComboPopup(null), 1500); // Remove popup after 1.5s
+      }
+
+      // Delay the actual line clearing to allow the visual effect to show
+      setTimeout(() => {
+        setClearedLines([]);
+      }, 300);
     } else {
       // Reset combo if no lines cleared
       setCombo(0);
+    }
+
+    // Actually clear the lines from the board
+    const newBoard = [...currentBoard];
+    for (let y = ROWS - 1; y >= 0; y--) {
+      if (newBoard[y].every(cell => cell !== 0)) {
+        newBoard.splice(y, 1);
+        newBoard.unshift(Array(COLS).fill(0));
+        y++;
+      }
     }
 
     return { board: newBoard, linesCleared };
@@ -449,7 +478,7 @@ export default function Index() {
 
     setIsLoadingLeaderboard(true);
     try {
-      const response = await fetch(`${apiUrl}/score/list`);
+      const response = await fetch(`${apiUrl}/score/list?page=${1}&size=${10}`);
       if (response.ok) {
         const apiResponse = await response.json();
         // API returns { status, message, code, result } structure
@@ -487,6 +516,20 @@ export default function Index() {
     drawNext();
   }, [nextPiece, nextPiece2, drawNext]);
 
+  // Animation loop for combo popup
+  useEffect(() => {
+    if (!comboPopup) return;
+
+    let animationFrame: number;
+    const animate = () => {
+      setAnimationTick(tick => tick + 1);
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [comboPopup]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !currentPiece) return;
@@ -505,6 +548,20 @@ export default function Index() {
         if (board[y][x]) {
           drawBlock(ctx, x, y, COLORS[board[y][x]]!);
         }
+      }
+    }
+
+    // Draw line clearing effect
+    if (clearedLines.length > 0) {
+      for (const lineY of clearedLines) {
+        // Flash effect with white overlay
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillRect(0, lineY * BLOCK_SIZE, COLS * BLOCK_SIZE, BLOCK_SIZE);
+
+        // Add particle-like effect on edges
+        ctx.strokeStyle = '#ffeb3b';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(0, lineY * BLOCK_SIZE, COLS * BLOCK_SIZE, BLOCK_SIZE);
       }
     }
 
@@ -541,7 +598,60 @@ export default function Index() {
         }
       }
     }
-  }, [board, currentPiece, drawBlock, getGhostY]);
+
+    // Draw combo popup
+    if (comboPopup) {
+      const elapsed = Date.now() - comboPopup.timestamp;
+      const progress = elapsed / 1500; // 1.5 seconds animation
+
+      // Fade out and move up
+      const opacity = Math.max(0, 1 - progress);
+      const yOffset = progress * 100; // Move up 100px
+
+      // Scale effect: start large, bounce to normal, then shrink
+      let scale;
+      if (progress < 0.2) {
+        scale = 1 + (1 - progress / 0.2) * 0.5; // Start at 1.5, go to 1
+      } else if (progress < 0.4) {
+        const bounceProgress = (progress - 0.2) / 0.2;
+        scale = 1 + Math.sin(bounceProgress * Math.PI) * 0.2; // Bounce effect
+      } else {
+        scale = 1 - (progress - 0.4) * 0.3; // Slowly shrink
+      }
+
+      const centerX = (COLS * BLOCK_SIZE) / 2;
+      const centerY = (ROWS * BLOCK_SIZE) / 2 - yOffset;
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.scale(scale, scale);
+
+      // Shadow for text
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 3;
+
+      // Draw outline
+      ctx.font = 'bold 48px Arial';
+      ctx.strokeStyle = `rgba(255, 87, 34, ${opacity})`;
+      ctx.lineWidth = 4;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeText(`${comboPopup.combo}x COMBO!`, 0, 0);
+
+      // Draw combo text
+      ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`;
+      ctx.fillText(`${comboPopup.combo}x COMBO!`, 0, 0);
+
+      // Reset
+      ctx.restore();
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+  }, [board, currentPiece, drawBlock, getGhostY, clearedLines, comboPopup, animationTick]);
 
   useEffect(() => {
     if (gameOver || isPaused || !currentPiece) return;
