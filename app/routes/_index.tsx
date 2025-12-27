@@ -508,18 +508,27 @@ export default function Index() {
       }
     }
 
-    // Draw ghost piece
+    // Draw ghost piece (expected landing position)
     const ghostY = getGhostY(currentPiece);
     for (let y = 0; y < currentPiece.shape.length; y++) {
       for (let x = 0; x < currentPiece.shape[y].length; x++) {
         if (currentPiece.shape[y][x]) {
           const posX = (currentPiece.x + x) * BLOCK_SIZE;
           const posY = (ghostY + y) * BLOCK_SIZE;
+
+          // White outer stroke for visibility
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(posX + 1, posY + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+
+          // Inner colored stroke
           ctx.strokeStyle = currentPiece.color;
           ctx.lineWidth = 2;
-          ctx.strokeRect(posX, posY, BLOCK_SIZE, BLOCK_SIZE);
-          ctx.fillStyle = currentPiece.color + '20';
-          ctx.fillRect(posX, posY, BLOCK_SIZE, BLOCK_SIZE);
+          ctx.strokeRect(posX + 2, posY + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
+
+          // Semi-transparent fill (increased from 20 to 40 for better visibility)
+          ctx.fillStyle = currentPiece.color + '40';
+          ctx.fillRect(posX + 2, posY + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
         }
       }
     }
