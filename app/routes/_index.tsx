@@ -383,6 +383,9 @@ export default function Index() {
   }, [score, level, lines, combo]);
 
   const handleNicknameSubmit = useCallback(async () => {
+    // Prevent duplicate submissions
+    if (isSubmittingScore || scoreSubmitted) return;
+
     if (!nickname.trim()) {
       alert('Please enter a nickname');
       return;
@@ -396,14 +399,17 @@ export default function Index() {
       setShowNicknamePrompt(false);
       setScoreSubmitted(true);
     }
-  }, [nickname, submitScore]);
+  }, [nickname, submitScore, isSubmittingScore, scoreSubmitted]);
 
   const handleNicknameReject = useCallback(() => {
+    // Prevent duplicate submissions
+    if (isSubmittingScore || scoreSubmitted) return;
+
     setShowNicknamePrompt(false);
     setScoreSubmitted(true);
     // Submit score asynchronously without user notice (backend generates random nickname)
     submitScore('', true);
-  }, [submitScore]);
+  }, [submitScore, isSubmittingScore, scoreSubmitted]);
 
   const fetchLeaderboard = useCallback(async () => {
     const apiUrl = typeof window !== 'undefined' ? window.ENV?.API_URL : '';
@@ -586,25 +592,25 @@ export default function Index() {
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !isSubmittingScore) {
+                    if (e.key === 'Enter' && !isSubmittingScore && !scoreSubmitted) {
                       handleNicknameSubmit();
                     }
                   }}
                   maxLength={20}
                   autoFocus
-                  disabled={isSubmittingScore}
+                  disabled={isSubmittingScore || scoreSubmitted}
                 />
                 <div className="prompt-buttons">
                   <button
                     onClick={handleNicknameSubmit}
-                    disabled={isSubmittingScore}
+                    disabled={isSubmittingScore || scoreSubmitted}
                     className="save-button"
                   >
                     {isSubmittingScore ? 'Saving...' : 'Save Score'}
                   </button>
                   <button
                     onClick={handleNicknameReject}
-                    disabled={isSubmittingScore}
+                    disabled={isSubmittingScore || scoreSubmitted}
                     className="skip-button"
                   >
                     Skip
