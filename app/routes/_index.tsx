@@ -788,20 +788,23 @@ export default function Index() {
         </div>
         <div className="side-panel">
           <div className="info-box">
-            <h2>Score</h2>
-            <p>{score}</p>
-          </div>
-          <div className="info-box">
             <h2>Level</h2>
             <p>{level}</p>
           </div>
           <div className="info-box">
-            <h2>Lines</h2>
-            <p>{lines}</p>
+            <h2>Score</h2>
+            <p>{score}</p>
           </div>
-          <div className="info-box">
-            <h2>Combo</h2>
-            <p className={combo > 0 ? 'combo-active' : ''}>{combo > 0 ? `${combo}x` : '-'}</p>
+          <div className="info-box stats-combined">
+            <div className="stat-item">
+              <h2>Lines</h2>
+              <p>{lines}</p>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <h2>Combo</h2>
+              <p className={combo > 0 ? 'combo-active' : ''}>{combo > 0 ? `${combo}x` : '-'}</p>
+            </div>
           </div>
           <div className="info-box next-pieces-box">
             <h2>Next</h2>

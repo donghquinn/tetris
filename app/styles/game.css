@@ -98,6 +98,44 @@ canvas {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Combined stats box (Lines + Combo) */
+.stats-combined {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    padding: 15px;
+}
+
+.stat-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-item h2 {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.stat-item p {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.stat-divider {
+    width: 1px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 0 10px;
+}
+
 .combo-active {
     color: #ffeb3b !important;
     animation: comboGlow 0.5s ease-in-out infinite alternate;
@@ -245,6 +283,24 @@ canvas {
         font-size: 20px;
     }
 
+    .stats-combined {
+        padding: 8px 10px;
+    }
+
+    .stat-item h2 {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .stat-item p {
+        font-size: 20px;
+    }
+
+    .stat-divider {
+        height: 40px;
+        margin: 0 8px;
+    }
+
     .controls {
         padding: 10px;
     }
@@ -373,6 +429,24 @@ canvas {
 
     .info-box p {
         font-size: 18px;
+    }
+
+    .stats-combined {
+        padding: 6px 8px;
+    }
+
+    .stat-item h2 {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+
+    .stat-item p {
+        font-size: 18px;
+    }
+
+    .stat-divider {
+        height: 35px;
+        margin: 0 6px;
     }
 
     .controls {
