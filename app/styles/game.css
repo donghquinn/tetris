@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     display: flex;
@@ -11,6 +16,8 @@ body {
     align-items: center;
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+    overflow-y: auto;
 }
 
 .game-container {
@@ -46,6 +53,7 @@ canvas {
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    display: block;
 }
 
 .side-panel {
@@ -149,13 +157,231 @@ canvas {
     display: none;
 }
 
+/* Responsive Design for Mobile */
+@media (max-width: 1024px) {
+    .game-container {
+        padding: 20px;
+    }
+
+    .game-content {
+        gap: 20px;
+    }
+}
+
 @media (max-width: 768px) {
+    body {
+        min-height: 100vh;
+        align-items: flex-start;
+        overflow-x: hidden;
+    }
+
+    .game-container {
+        padding: 15px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .game-title {
+        font-size: 36px;
+        margin-bottom: 15px;
+    }
+
+    .game-content {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        width: 100%;
+    }
+
+    canvas#gameCanvas {
+        width: 100%;
+        max-width: 360px;
+        height: auto;
+    }
+
+    .side-panel {
+        width: 100%;
+        max-width: 360px;
+        gap: 12px;
+    }
+
+    .info-box {
+        padding: 12px;
+        min-width: auto;
+    }
+
+    .info-box h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .info-box p {
+        font-size: 24px;
+    }
+
+    .controls {
+        padding: 15px;
+    }
+
+    .controls h2 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .controls p {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .button-group {
+        gap: 8px;
+    }
+
+    .start-button,
+    .pause-button,
+    .reset-button,
+    .leaderboard-button {
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .leaderboard-button {
+        font-size: 18px;
+        padding: 16px 20px;
+    }
+
+    .game-over {
+        padding: 30px;
+        max-width: 90%;
+    }
+
+    .game-over h1 {
+        font-size: 36px;
+    }
+
+    .game-over p {
+        font-size: 20px;
+    }
+
+    .game-over button {
+        font-size: 18px;
+        padding: 12px 30px;
+    }
+
+    .nickname-prompt input {
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+
+    .save-button,
+    .skip-button {
+        font-size: 15px;
+        padding: 10px 16px;
+    }
+
+    .leaderboard-modal {
+        min-width: auto;
+        width: 90%;
+        max-width: 500px;
+        padding: 20px;
+    }
+
+    .leaderboard-header h2 {
+        font-size: 26px;
+    }
+
+    .leaderboard-entry {
+        padding: 12px 15px;
+    }
+
+    .rank {
+        font-size: 18px;
+        min-width: 40px;
+    }
+
+    .player-name {
+        font-size: 16px;
+        margin: 0 15px;
+    }
+
+    .player-score {
+        font-size: 18px;
+    }
+
     .desktop-controls {
         display: none;
     }
 
     .mobile-controls {
         display: block;
+    }
+
+    .next-piece-canvas {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-container {
+        padding: 10px;
+    }
+
+    .game-title {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .info-box {
+        padding: 10px;
+    }
+
+    .info-box h2 {
+        font-size: 14px;
+    }
+
+    .info-box p {
+        font-size: 20px;
+    }
+
+    .controls {
+        padding: 12px;
+    }
+
+    .leaderboard-button {
+        font-size: 16px;
+        padding: 14px 18px;
+    }
+
+    .trophy-icon {
+        font-size: 20px;
+    }
+
+    .game-over {
+        padding: 20px;
+    }
+
+    .game-over h1 {
+        font-size: 28px;
+        margin-bottom: 15px;
+    }
+
+    .game-over p {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .leaderboard-modal {
+        padding: 15px;
+    }
+
+    .leaderboard-header h2 {
+        font-size: 22px;
+    }
+
+    .next-piece-canvas {
+        width: 70px;
+        height: 70px;
     }
 }
 
