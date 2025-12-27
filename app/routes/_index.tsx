@@ -600,6 +600,76 @@ export default function Index() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [movePiece, rotatePiece, hardDrop, togglePause]);
 
+  // Touch controls for mobile
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let lastMoveX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (gameOverRef.current || isPausedRef.current) return;
+
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartTime = Date.now();
+      lastMoveX = touchStartX;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (gameOverRef.current || isPausedRef.current) return;
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - lastMoveX;
+      const deltaY = touch.clientY - touchStartY;
+
+      // Horizontal movement (drag to move left/right)
+      if (Math.abs(deltaX) > 15) {
+        if (deltaX > 0) {
+          movePiece(1, 0);
+        } else {
+          movePiece(-1, 0);
+        }
+        lastMoveX = touch.clientX;
+      }
+
+      // Vertical swipe down (hard drop)
+      if (deltaY > 100) {
+        hardDrop();
+        touchStartTime = 0; // Prevent tap from triggering
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (gameOverRef.current || isPausedRef.current) return;
+
+      const touchDuration = Date.now() - touchStartTime;
+      const touch = e.changedTouches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartX);
+      const deltaY = Math.abs(touch.clientY - touchStartY);
+
+      // If it was a quick tap (not a drag), rotate
+      if (touchDuration < 200 && deltaX < 20 && deltaY < 20) {
+        rotatePiece();
+      }
+    };
+
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [movePiece, rotatePiece, hardDrop]);
+
   return (
     <div className="game-container">
       <h1 className="game-title">TETRIS</h1>
@@ -720,12 +790,19 @@ export default function Index() {
           </div>
           <div className="controls">
             <h2>Controls</h2>
-            <p><span>Move Left</span><span className="key">←</span></p>
-            <p><span>Move Right</span><span className="key">→</span></p>
-            <p><span>Soft Drop</span><span className="key">↓</span></p>
-            <p><span>Hard Drop</span><span className="key">Space</span></p>
-            <p><span>Rotate</span><span className="key">↑</span></p>
-            <p><span>Pause</span><span className="key">P</span></p>
+            <div className="desktop-controls">
+              <p><span>Move Left</span><span className="key">←</span></p>
+              <p><span>Move Right</span><span className="key">→</span></p>
+              <p><span>Soft Drop</span><span className="key">↓</span></p>
+              <p><span>Hard Drop</span><span className="key">Space</span></p>
+              <p><span>Rotate</span><span className="key">↑</span></p>
+              <p><span>Pause</span><span className="key">P</span></p>
+            </div>
+            <div className="mobile-controls">
+              <p><span>Move</span><span className="key">Drag</span></p>
+              <p><span>Rotate</span><span className="key">Tap</span></p>
+              <p><span>Hard Drop</span><span className="key">Swipe Down</span></p>
+            </div>
           </div>
           <div className="button-group">
             <button className="leaderboard-button" onClick={toggleLeaderboard}>
