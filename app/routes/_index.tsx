@@ -716,14 +716,6 @@ export default function Index() {
                   className="next-piece-canvas"
                 />
               </div>
-              <div className="next-piece-item">
-                <canvas
-                  ref={nextCanvas2Ref}
-                  width={100}
-                  height={100}
-                  className="next-piece-canvas next-piece-2"
-                />
-              </div>
             </div>
           </div>
           <div className="controls">
