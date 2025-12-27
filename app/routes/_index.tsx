@@ -46,6 +46,17 @@ interface Piece {
   y: number;
 }
 
+interface ScoreItem {
+  score_seq: number;
+  user_id: string;
+  user_nickname: string;
+  score_point: number;
+  score_level: number;
+  score_line: number;
+  score_combo: number;
+  created_at: string;
+}
+
 export default function Index() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nextCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,6 +74,9 @@ export default function Index() {
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
   const [nickname, setNickname] = useState("");
   const [isSubmittingScore, setIsSubmittingScore] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState<ScoreItem[]>([]);
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
 
   const boardRef = useRef(board);
   const currentPieceRef = useRef(currentPiece);
@@ -342,16 +356,17 @@ export default function Index() {
     }
 
     try {
-      const response = await fetch(`${apiUrl}/api/score`, {
+      const response = await fetch(`${apiUrl}/score/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          nickname: playerNickname,
-          score: score,
-          level: level,
-          lines: lines,
+          user_nickname: playerNickname,
+          score_point: score,
+          score_level: level,
+          score_line: lines,
+          score_combo: combo,
         }),
       });
 
@@ -363,7 +378,7 @@ export default function Index() {
         console.error('Error submitting score:', error);
       }
     }
-  }, [score, level, lines]);
+  }, [score, level, lines, combo]);
 
   const handleNicknameSubmit = useCallback(async () => {
     if (!nickname.trim()) {
@@ -382,6 +397,38 @@ export default function Index() {
     // Submit score asynchronously without user notice (backend generates random nickname)
     submitScore('', true);
   }, [submitScore]);
+
+  const fetchLeaderboard = useCallback(async () => {
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (!apiUrl) {
+      console.error('VITE_API_URL is not configured');
+      return;
+    }
+
+    setIsLoadingLeaderboard(true);
+    try {
+      const response = await fetch(`${apiUrl}/score/list`);
+      if (response.ok) {
+        const apiResponse = await response.json();
+        // API returns { status, message, code, result } structure
+        const data = apiResponse.result || apiResponse;
+        setLeaderboardData(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Failed to fetch leaderboard:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+    } finally {
+      setIsLoadingLeaderboard(false);
+    }
+  }, []);
+
+  const toggleLeaderboard = useCallback(() => {
+    if (!showLeaderboard) {
+      fetchLeaderboard();
+    }
+    setShowLeaderboard(prev => !prev);
+  }, [showLeaderboard, fetchLeaderboard]);
 
   useEffect(() => {
     newPiece();
@@ -566,6 +613,33 @@ export default function Index() {
               <button onClick={restartGame}>Play Again</button>
             </div>
           )}
+          {showLeaderboard && (
+            <div className="leaderboard-overlay">
+              <div className="leaderboard-modal">
+                <div className="leaderboard-header">
+                  <h2>Leaderboard</h2>
+                  <button className="close-button" onClick={toggleLeaderboard}>×</button>
+                </div>
+                <div className="leaderboard-content">
+                  {isLoadingLeaderboard ? (
+                    <p className="loading-text">Loading...</p>
+                  ) : leaderboardData.length === 0 ? (
+                    <p className="empty-text">No scores yet. Be the first!</p>
+                  ) : (
+                    <div className="leaderboard-list">
+                      {leaderboardData.map((entry, index) => (
+                        <div key={index} className={`leaderboard-entry ${index < 3 ? `rank-${index + 1}` : ''}`}>
+                          <span className="rank">#{index + 1}</span>
+                          <span className="player-name">{entry.user_nickname || 'Anonymous'}</span>
+                          <span className="player-score">{entry.score_point?.toLocaleString() || 0}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div className="side-panel">
           <div className="info-box">
@@ -608,6 +682,9 @@ export default function Index() {
             </button>
             <button className="reset-button" onClick={restartGame}>
               Reset Game
+            </button>
+            <button className="leaderboard-button" onClick={toggleLeaderboard}>
+              Leaderboard
             </button>
           </div>
         </div>
