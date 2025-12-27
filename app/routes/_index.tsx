@@ -641,8 +641,8 @@ export default function Index() {
       const deltaY = touch.clientY - touchStartY;
       const currentTime = Date.now();
 
-      // Horizontal movement (drag to move left/right)
-      if (Math.abs(deltaX) > 20) {
+      // Horizontal movement (drag to move left/right) - Lower sensitivity
+      if (Math.abs(deltaX) > 35) {
         if (deltaX > 0) {
           movePiece(1, 0);
         } else {
@@ -651,20 +651,20 @@ export default function Index() {
         lastMoveX = touch.clientX;
       }
 
-      // Vertical movement detection
-      if (deltaY > 30 && !hasDropped) {
+      // Vertical movement detection - Lower sensitivity
+      if (deltaY > 50 && !hasDropped) {
         const swipeDuration = currentTime - touchStartTime;
         const swipeDistance = deltaY;
         const velocity = swipeDistance / swipeDuration; // pixels per millisecond
 
-        // Fast swipe (velocity > 0.5 px/ms) = Hard Drop
-        if (velocity > 0.5 && swipeDistance > 80) {
+        // Fast swipe (velocity > 0.7 px/ms) = Hard Drop - Higher velocity threshold
+        if (velocity > 0.7 && swipeDistance > 120) {
           hardDrop();
           hasDropped = true;
           touchStartTime = 0; // Prevent tap from triggering
         }
-        // Slow drag = Soft Drop (move down incrementally)
-        else if (deltaY > 40 && currentTime - lastSoftDropTime > 150) {
+        // Slow drag = Soft Drop (move down incrementally) - Higher distance threshold
+        else if (deltaY > 60 && currentTime - lastSoftDropTime > 150) {
           const moved = movePiece(0, 1);
           if (moved) {
             lastSoftDropTime = currentTime;
@@ -681,8 +681,8 @@ export default function Index() {
       const deltaX = Math.abs(touch.clientX - touchStartX);
       const deltaY = touch.clientY - touchStartY;
 
-      // If it was a quick tap (not a drag), rotate
-      if (touchDuration < 200 && deltaX < 20 && Math.abs(deltaY) < 20 && !hasDropped) {
+      // If it was a quick tap (not a drag), rotate - More forgiving threshold
+      if (touchDuration < 200 && deltaX < 30 && Math.abs(deltaY) < 30 && !hasDropped) {
         rotatePiece();
       }
     };
