@@ -74,6 +74,7 @@ export default function Index() {
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
   const [nickname, setNickname] = useState("");
   const [isSubmittingScore, setIsSubmittingScore] = useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState<ScoreItem[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
@@ -332,6 +333,7 @@ export default function Index() {
     setShowNicknamePrompt(false);
     setNickname("");
     setIsSubmittingScore(false);
+    setScoreSubmitted(false);
     pieceBagRef.current = [];
 
     setTimeout(() => {
@@ -387,13 +389,18 @@ export default function Index() {
     }
 
     setIsSubmittingScore(true);
-    await submitScore(nickname.trim(), false);
-    setIsSubmittingScore(false);
-    setShowNicknamePrompt(false);
+    try {
+      await submitScore(nickname.trim(), false);
+    } finally {
+      setIsSubmittingScore(false);
+      setShowNicknamePrompt(false);
+      setScoreSubmitted(true);
+    }
   }, [nickname, submitScore]);
 
   const handleNicknameReject = useCallback(() => {
     setShowNicknamePrompt(false);
+    setScoreSubmitted(true);
     // Submit score asynchronously without user notice (backend generates random nickname)
     submitScore('', true);
   }, [submitScore]);
@@ -436,10 +443,10 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (gameOver && !showNicknamePrompt) {
+    if (gameOver && !showNicknamePrompt && !scoreSubmitted) {
       setShowNicknamePrompt(true);
     }
-  }, [gameOver, showNicknamePrompt]);
+  }, [gameOver, showNicknamePrompt, scoreSubmitted]);
 
   useEffect(() => {
     drawNext();
