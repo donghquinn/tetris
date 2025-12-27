@@ -185,7 +185,7 @@ export default function Index() {
         ctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
 
         const tempPiece = createPiece(nextPiece);
-        const size = 25;
+        const size = 20;
         const offsetX = (4 - tempPiece.shape[0].length) / 2;
         const offsetY = (4 - tempPiece.shape.length) / 2;
 
@@ -208,7 +208,7 @@ export default function Index() {
         ctx.fillRect(0, 0, nextCanvas2.width, nextCanvas2.height);
 
         const tempPiece = createPiece(nextPiece2);
-        const size = 25;
+        const size = 20;
         const offsetX = (4 - tempPiece.shape[0].length) / 2;
         const offsetY = (4 - tempPiece.shape.length) / 2;
 
@@ -708,18 +708,22 @@ export default function Index() {
           <div className="info-box next-pieces-box">
             <h2>Next</h2>
             <div className="next-pieces-container">
-              <canvas
-                ref={nextCanvasRef}
-                width={120}
-                height={120}
-                className="next-piece-canvas"
-              />
-              <canvas
-                ref={nextCanvas2Ref}
-                width={120}
-                height={120}
-                className="next-piece-canvas next-piece-2"
-              />
+              <div className="next-piece-item">
+                <canvas
+                  ref={nextCanvasRef}
+                  width={100}
+                  height={100}
+                  className="next-piece-canvas"
+                />
+              </div>
+              <div className="next-piece-item">
+                <canvas
+                  ref={nextCanvas2Ref}
+                  width={100}
+                  height={100}
+                  className="next-piece-canvas next-piece-2"
+                />
+              </div>
             </div>
           </div>
           <div className="controls">

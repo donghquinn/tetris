@@ -89,9 +89,15 @@ canvas {
 
 .next-pieces-container {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.next-piece-item {
+    width: 100%;
+    display: flex;
     justify-content: center;
-    flex-wrap: wrap;
 }
 
 .next-piece-canvas {
@@ -101,8 +107,8 @@ canvas {
 }
 
 .next-piece-2 {
-    opacity: 0.7;
-    transform: scale(0.85);
+    opacity: 0.6;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .controls {
