@@ -60,6 +60,7 @@ interface ScoreItem {
 export default function Index() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nextCanvasRef = useRef<HTMLCanvasElement>(null);
+  const nextCanvas2Ref = useRef<HTMLCanvasElement>(null);
   const [board, setBoard] = useState<Board>(() =>
     Array(ROWS).fill(null).map(() => Array(COLS).fill(0))
   );
@@ -71,6 +72,7 @@ export default function Index() {
   const [isPaused, setIsPaused] = useState(false);
   const [currentPiece, setCurrentPiece] = useState<Piece | null>(null);
   const [nextPiece, setNextPiece] = useState<number | null>(null);
+  const [nextPiece2, setNextPiece2] = useState<number | null>(null);
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
   const [nickname, setNickname] = useState("");
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
@@ -174,28 +176,52 @@ export default function Index() {
 
 
   const drawNext = useCallback(() => {
+    // Draw first next piece
     const nextCanvas = nextCanvasRef.current;
-    if (!nextCanvas || nextPiece === null) return;
+    if (nextCanvas && nextPiece !== null) {
+      const ctx = nextCanvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
 
-    const ctx = nextCanvas.getContext('2d');
-    if (!ctx) return;
+        const tempPiece = createPiece(nextPiece);
+        const size = 25;
+        const offsetX = (4 - tempPiece.shape[0].length) / 2;
+        const offsetY = (4 - tempPiece.shape.length) / 2;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-    ctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-
-    const tempPiece = createPiece(nextPiece);
-    const size = 25;
-    const offsetX = (4 - tempPiece.shape[0].length) / 2;
-    const offsetY = (4 - tempPiece.shape.length) / 2;
-
-    for (let y = 0; y < tempPiece.shape.length; y++) {
-      for (let x = 0; x < tempPiece.shape[y].length; x++) {
-        if (tempPiece.shape[y][x]) {
-          drawBlock(ctx, x + offsetX, y + offsetY, tempPiece.color, size);
+        for (let y = 0; y < tempPiece.shape.length; y++) {
+          for (let x = 0; x < tempPiece.shape[y].length; x++) {
+            if (tempPiece.shape[y][x]) {
+              drawBlock(ctx, x + offsetX, y + offsetY, tempPiece.color, size);
+            }
+          }
         }
       }
     }
-  }, [nextPiece, createPiece, drawBlock]);
+
+    // Draw second next piece
+    const nextCanvas2 = nextCanvas2Ref.current;
+    if (nextCanvas2 && nextPiece2 !== null) {
+      const ctx = nextCanvas2.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(0, 0, nextCanvas2.width, nextCanvas2.height);
+
+        const tempPiece = createPiece(nextPiece2);
+        const size = 25;
+        const offsetX = (4 - tempPiece.shape[0].length) / 2;
+        const offsetY = (4 - tempPiece.shape.length) / 2;
+
+        for (let y = 0; y < tempPiece.shape.length; y++) {
+          for (let x = 0; x < tempPiece.shape[y].length; x++) {
+            if (tempPiece.shape[y][x]) {
+              drawBlock(ctx, x + offsetX, y + offsetY, tempPiece.color, size);
+            }
+          }
+        }
+      }
+    }
+  }, [nextPiece, nextPiece2, createPiece, drawBlock]);
 
   const mergePiece = useCallback((piece: Piece) => {
     const newBoard = boardRef.current.map(row => [...row]);
@@ -295,19 +321,23 @@ export default function Index() {
     const { board: clearedBoard } = clearLines(mergedBoard);
     setBoard(clearedBoard);
 
-    const nextType = randomPiece();
+    // Current piece becomes nextPiece
     const newPiece = createPiece(nextPiece!);
+
+    // nextPiece becomes nextPiece2
+    // nextPiece2 becomes a new random piece
+    const newNextPiece2 = randomPiece();
 
     if (collides(newPiece)) {
       setGameOver(true);
     }
 
     setCurrentPiece(newPiece);
-    setNextPiece(nextType);
-  }, [collides, mergePiece, clearLines, randomPiece, createPiece, nextPiece]);
+    setNextPiece(nextPiece2!);
+    setNextPiece2(newNextPiece2);
+  }, [collides, mergePiece, clearLines, randomPiece, createPiece, nextPiece, nextPiece2]);
 
   const newPiece = useCallback(() => {
-    const nextType = randomPiece();
     const pieceType = nextPiece ?? randomPiece();
     const piece = createPiece(pieceType);
 
@@ -316,8 +346,10 @@ export default function Index() {
     }
 
     setCurrentPiece(piece);
-    setNextPiece(nextType);
-  }, [randomPiece, createPiece, nextPiece, collides]);
+    // Shift pieces: nextPiece2 becomes nextPiece, generate new nextPiece2
+    setNextPiece(nextPiece2 ?? randomPiece());
+    setNextPiece2(randomPiece());
+  }, [randomPiece, createPiece, nextPiece, nextPiece2, collides]);
 
   const restartGame = useCallback(() => {
     setBoard(Array(ROWS).fill(null).map(() => Array(COLS).fill(0)));
@@ -328,6 +360,7 @@ export default function Index() {
     setGameOver(false);
     setIsPaused(false);
     setNextPiece(null);
+    setNextPiece2(null);
     setCurrentPiece(null);
     setShowNicknamePrompt(false);
     setNickname("");
@@ -335,10 +368,12 @@ export default function Index() {
     pieceBagRef.current = [];
 
     setTimeout(() => {
-      const nextType = randomPiece();
       const pieceType = randomPiece();
+      const nextType = randomPiece();
+      const nextType2 = randomPiece();
       setCurrentPiece(createPiece(pieceType));
       setNextPiece(nextType);
+      setNextPiece2(nextType2);
     }, 0);
   }, [randomPiece, createPiece]);
 
@@ -450,7 +485,7 @@ export default function Index() {
 
   useEffect(() => {
     drawNext();
-  }, [nextPiece, drawNext]);
+  }, [nextPiece, nextPiece2, drawNext]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -510,20 +545,25 @@ export default function Index() {
         const { board: clearedBoard } = clearLines(mergedBoard);
         setBoard(clearedBoard);
 
-        const nextType = randomPiece();
+        // Current piece becomes nextPiece
         const newPiece = createPiece(nextPiece!);
+
+        // nextPiece becomes nextPiece2
+        // nextPiece2 becomes a new random piece
+        const newNextPiece2 = randomPiece();
 
         if (collides(newPiece)) {
           setGameOver(true);
         }
 
         setCurrentPiece(newPiece);
-        setNextPiece(nextType);
+        setNextPiece(nextPiece2!);
+        setNextPiece2(newNextPiece2);
       }
     }, dropInterval);
 
     return () => clearInterval(interval);
-  }, [level, gameOver, isPaused, currentPiece, movePiece, mergePiece, clearLines, randomPiece, createPiece, nextPiece, collides]);
+  }, [level, gameOver, isPaused, currentPiece, movePiece, mergePiece, clearLines, randomPiece, createPiece, nextPiece, nextPiece2, collides]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -665,14 +705,22 @@ export default function Index() {
             <h2>Combo</h2>
             <p className={combo > 0 ? 'combo-active' : ''}>{combo > 0 ? `${combo}x` : '-'}</p>
           </div>
-          <div className="info-box">
+          <div className="info-box next-pieces-box">
             <h2>Next</h2>
-            <canvas
-              ref={nextCanvasRef}
-              width={120}
-              height={120}
-              className="next-piece-canvas"
-            />
+            <div className="next-pieces-container">
+              <canvas
+                ref={nextCanvasRef}
+                width={120}
+                height={120}
+                className="next-piece-canvas"
+              />
+              <canvas
+                ref={nextCanvas2Ref}
+                width={120}
+                height={120}
+                className="next-piece-canvas next-piece-2"
+              />
+            </div>
           </div>
           <div className="controls">
             <h2>Controls</h2>
