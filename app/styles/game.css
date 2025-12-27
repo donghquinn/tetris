@@ -237,3 +237,92 @@ canvas {
 .reset-button:active {
     transform: translateY(0);
 }
+
+.nickname-prompt {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.prompt-text {
+    font-size: 18px !important;
+    margin-bottom: 5px !important;
+    color: #fff;
+}
+
+.nickname-prompt input {
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.nickname-prompt input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.nickname-prompt input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.nickname-prompt input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.prompt-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.save-button,
+.skip-button {
+    flex: 1;
+    font-size: 16px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.save-button {
+    background: #4caf50;
+    color: white;
+}
+
+.save-button:hover:not(:disabled) {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.skip-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.skip-button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.skip-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

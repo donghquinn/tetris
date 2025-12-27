@@ -60,6 +60,9 @@ export default function Index() {
   const [isPaused, setIsPaused] = useState(false);
   const [currentPiece, setCurrentPiece] = useState<Piece | null>(null);
   const [nextPiece, setNextPiece] = useState<number | null>(null);
+  const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [isSubmittingScore, setIsSubmittingScore] = useState(false);
 
   const boardRef = useRef(board);
   const currentPieceRef = useRef(currentPiece);
@@ -312,6 +315,9 @@ export default function Index() {
     setIsPaused(false);
     setNextPiece(null);
     setCurrentPiece(null);
+    setShowNicknamePrompt(false);
+    setNickname("");
+    setIsSubmittingScore(false);
     pieceBagRef.current = [];
 
     setTimeout(() => {
@@ -328,10 +334,65 @@ export default function Index() {
     }
   }, [gameOver]);
 
+  const submitScore = useCallback(async (playerNickname: string, silent: boolean = false) => {
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (!apiUrl) {
+      console.error('VITE_API_URL is not configured');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/api/score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname: playerNickname,
+          score: score,
+          level: level,
+          lines: lines,
+        }),
+      });
+
+      if (!response.ok && !silent) {
+        console.error('Failed to submit score:', response.statusText);
+      }
+    } catch (error) {
+      if (!silent) {
+        console.error('Error submitting score:', error);
+      }
+    }
+  }, [score, level, lines]);
+
+  const handleNicknameSubmit = useCallback(async () => {
+    if (!nickname.trim()) {
+      alert('Please enter a nickname');
+      return;
+    }
+
+    setIsSubmittingScore(true);
+    await submitScore(nickname.trim(), false);
+    setIsSubmittingScore(false);
+    setShowNicknamePrompt(false);
+  }, [nickname, submitScore]);
+
+  const handleNicknameReject = useCallback(() => {
+    setShowNicknamePrompt(false);
+    // Submit score asynchronously without user notice (backend generates random nickname)
+    submitScore('', true);
+  }, [submitScore]);
+
   useEffect(() => {
     newPiece();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (gameOver && !showNicknamePrompt) {
+      setShowNicknamePrompt(true);
+    }
+  }, [gameOver, showNicknamePrompt]);
 
   useEffect(() => {
     drawNext();
@@ -459,7 +520,46 @@ export default function Index() {
           {isPaused && (
             <div className="pause-overlay">PAUSED</div>
           )}
-          {gameOver && (
+          {gameOver && showNicknamePrompt && (
+            <div className="game-over">
+              <h1>GAME OVER</h1>
+              <p>Score: <span>{score}</span></p>
+              <div className="nickname-prompt">
+                <p className="prompt-text">Save your score to the leaderboard?</p>
+                <input
+                  type="text"
+                  placeholder="Enter your nickname"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !isSubmittingScore) {
+                      handleNicknameSubmit();
+                    }
+                  }}
+                  maxLength={20}
+                  autoFocus
+                  disabled={isSubmittingScore}
+                />
+                <div className="prompt-buttons">
+                  <button
+                    onClick={handleNicknameSubmit}
+                    disabled={isSubmittingScore}
+                    className="save-button"
+                  >
+                    {isSubmittingScore ? 'Saving...' : 'Save Score'}
+                  </button>
+                  <button
+                    onClick={handleNicknameReject}
+                    disabled={isSubmittingScore}
+                    className="skip-button"
+                  >
+                    Skip
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {gameOver && !showNicknamePrompt && (
             <div className="game-over">
               <h1>GAME OVER</h1>
               <p>Score: <span>{score}</span></p>
