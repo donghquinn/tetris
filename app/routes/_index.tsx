@@ -904,13 +904,46 @@ export default function Index() {
     <div className="game-container">
       <h1 className="game-title">TETRIS</h1>
       <div className="game-content">
-        <div style={{ position: 'relative' }}>
+        <div className="game-area">
           <canvas
             ref={canvasRef}
             id="gameCanvas"
             width={COLS * BLOCK_SIZE}
             height={ROWS * BLOCK_SIZE}
           />
+
+          {/* Mobile overlay stats */}
+          <div className="mobile-overlay-stats">
+            <div className="overlay-stat">
+              <span className="overlay-label">Lvl</span>
+              <span className="overlay-value">{level}</span>
+            </div>
+            <div className="overlay-stat">
+              <span className="overlay-label">Score</span>
+              <span className="overlay-value">{score}</span>
+            </div>
+            <div className="overlay-stat">
+              <span className="overlay-label">Lines</span>
+              <span className="overlay-value">{lines}</span>
+            </div>
+            {combo > 0 && (
+              <div className="overlay-stat combo-highlight">
+                <span className="overlay-label">Combo</span>
+                <span className="overlay-value">{combo}x</span>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile next piece overlay */}
+          <div className="mobile-next-overlay">
+            <canvas
+              ref={nextCanvasRef}
+              width={100}
+              height={100}
+              className="next-piece-canvas"
+            />
+          </div>
+
           {isPaused && (
             <div className="pause-overlay">PAUSED</div>
           )}
@@ -987,7 +1020,22 @@ export default function Index() {
               </div>
             </div>
           )}
+
+          {/* Mobile bottom controls */}
+          <div className="mobile-bottom-controls">
+            <button className="mobile-control-btn" onClick={toggleLeaderboard}>
+              🏆
+            </button>
+            <button className="mobile-control-btn" onClick={togglePause}>
+              {isPaused ? '▶' : '⏸'}
+            </button>
+            <button className="mobile-control-btn" onClick={restartGame}>
+              🔄
+            </button>
+          </div>
         </div>
+
+        {/* Desktop side panel */}
         <div className="side-panel">
           <div className="info-box">
             <h2>Level</h2>
@@ -1030,12 +1078,6 @@ export default function Index() {
               <p><span>Hard Drop</span><span className="key">Space</span></p>
               <p><span>Rotate</span><span className="key">↑</span></p>
               <p><span>Pause</span><span className="key">P</span></p>
-            </div>
-            <div className="mobile-controls">
-              <p><span>Move</span><span className="key">Drag L/R</span></p>
-              <p><span>Rotate</span><span className="key">Tap</span></p>
-              <p><span>Soft Drop</span><span className="key">Drag Down</span></p>
-              <p><span>Hard Drop</span><span className="key">Swipe Down</span></p>
             </div>
           </div>
           <div className="button-group">
