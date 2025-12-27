@@ -82,6 +82,7 @@ export default function Index() {
 
   // Visual effects states
   const [clearedLines, setClearedLines] = useState<number[]>([]);
+  const [clearEffect, setClearEffect] = useState<{ lines: number[]; timestamp: number } | null>(null);
   const [comboPopup, setComboPopup] = useState<{ combo: number; timestamp: number } | null>(null);
   const [animationTick, setAnimationTick] = useState(0);
 
@@ -281,6 +282,7 @@ export default function Index() {
 
       // Show visual effect first
       setClearedLines(clearedLineIndices);
+      setClearEffect({ lines: clearedLineIndices, timestamp: Date.now() });
 
       // Show combo popup if combo > 1
       if (newCombo > 1) {
@@ -291,7 +293,8 @@ export default function Index() {
       // Delay the actual line clearing to allow the visual effect to show
       setTimeout(() => {
         setClearedLines([]);
-      }, 300);
+        setClearEffect(null);
+      }, 600);
     } else {
       // Reset combo if no lines cleared
       setCombo(0);
@@ -516,9 +519,9 @@ export default function Index() {
     drawNext();
   }, [nextPiece, nextPiece2, drawNext]);
 
-  // Animation loop for combo popup
+  // Animation loop for visual effects
   useEffect(() => {
-    if (!comboPopup) return;
+    if (!comboPopup && !clearEffect) return;
 
     let animationFrame: number;
     const animate = () => {
@@ -528,7 +531,7 @@ export default function Index() {
 
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
-  }, [comboPopup]);
+  }, [comboPopup, clearEffect]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -551,17 +554,106 @@ export default function Index() {
       }
     }
 
-    // Draw line clearing effect
-    if (clearedLines.length > 0) {
-      for (const lineY of clearedLines) {
-        // Flash effect with white overlay
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.fillRect(0, lineY * BLOCK_SIZE, COLS * BLOCK_SIZE, BLOCK_SIZE);
+    // Draw fancy line clearing effect
+    if (clearEffect && clearEffect.lines.length > 0) {
+      const elapsed = Date.now() - clearEffect.timestamp;
+      const progress = Math.min(elapsed / 600, 1); // 600ms animation
 
-        // Add particle-like effect on edges
-        ctx.strokeStyle = '#ffeb3b';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(0, lineY * BLOCK_SIZE, COLS * BLOCK_SIZE, BLOCK_SIZE);
+      for (const lineY of clearEffect.lines) {
+        const y = lineY * BLOCK_SIZE;
+
+        // Stage 1: Flash and expand (0-0.3)
+        if (progress < 0.3) {
+          const stageProgress = progress / 0.3;
+          const opacity = 0.9 * (1 - stageProgress * 0.3);
+
+          // Bright flash
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.fillRect(0, y, COLS * BLOCK_SIZE, BLOCK_SIZE);
+
+          // Glowing borders
+          const gradient = ctx.createLinearGradient(0, y, COLS * BLOCK_SIZE, y);
+          gradient.addColorStop(0, `rgba(255, 215, 0, ${opacity})`);
+          gradient.addColorStop(0.5, `rgba(255, 255, 0, ${opacity})`);
+          gradient.addColorStop(1, `rgba(255, 215, 0, ${opacity})`);
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, y, COLS * BLOCK_SIZE, BLOCK_SIZE);
+        }
+
+        // Stage 2: Particle explosion (0.2-0.8)
+        if (progress >= 0.2 && progress <= 0.8) {
+          const particleProgress = (progress - 0.2) / 0.6;
+          const particleCount = 30;
+
+          for (let i = 0; i < particleCount; i++) {
+            const angle = (i / particleCount) * Math.PI * 2;
+            const speed = 50 + Math.random() * 50;
+            const distance = speed * particleProgress;
+
+            const centerX = (i / particleCount) * COLS * BLOCK_SIZE;
+            const centerY = y + BLOCK_SIZE / 2;
+
+            const px = centerX + Math.cos(angle) * distance;
+            const py = centerY + Math.sin(angle) * distance;
+
+            const opacity = Math.max(0, 1 - particleProgress);
+            const hue = 45 + Math.random() * 30; // Gold/yellow range
+
+            ctx.fillStyle = `hsla(${hue}, 100%, 60%, ${opacity})`;
+            ctx.beginPath();
+            const size = 3 + Math.random() * 3;
+            ctx.arc(px, py, size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add glow
+            ctx.shadowColor = `hsla(${hue}, 100%, 60%, ${opacity})`;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(px, py, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+        }
+
+        // Stage 3: Sweep effect (0.3-1.0)
+        if (progress >= 0.3) {
+          const sweepProgress = (progress - 0.3) / 0.7;
+          const sweepX = sweepProgress * COLS * BLOCK_SIZE;
+
+          // Light sweep from left to right
+          const sweepGradient = ctx.createLinearGradient(sweepX - 40, y, sweepX + 40, y);
+          sweepGradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          sweepGradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.6 * (1 - sweepProgress)})`);
+          sweepGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+          ctx.fillStyle = sweepGradient;
+          ctx.fillRect(Math.max(0, sweepX - 40), y, 80, BLOCK_SIZE);
+        }
+
+        // Sparkles throughout
+        if (progress < 0.9) {
+          const sparkleCount = 15;
+          for (let i = 0; i < sparkleCount; i++) {
+            const sparkleX = (i / sparkleCount) * COLS * BLOCK_SIZE + (Math.sin(Date.now() / 100 + i) * 10);
+            const sparkleY = y + BLOCK_SIZE / 2 + (Math.cos(Date.now() / 100 + i) * 5);
+            const sparkleOpacity = (1 - progress) * (0.5 + Math.sin(Date.now() / 50 + i) * 0.5);
+
+            ctx.fillStyle = `rgba(255, 255, 255, ${sparkleOpacity})`;
+            ctx.beginPath();
+            ctx.arc(sparkleX, sparkleY, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Star shape
+            ctx.save();
+            ctx.translate(sparkleX, sparkleY);
+            ctx.rotate(Date.now() / 200 + i);
+            ctx.fillStyle = `rgba(255, 255, 100, ${sparkleOpacity})`;
+            ctx.fillRect(-1, -4, 2, 8);
+            ctx.fillRect(-4, -1, 8, 2);
+            ctx.restore();
+          }
+        }
       }
     }
 
@@ -651,7 +743,7 @@ export default function Index() {
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
     }
-  }, [board, currentPiece, drawBlock, getGhostY, clearedLines, comboPopup, animationTick]);
+  }, [board, currentPiece, drawBlock, getGhostY, clearedLines, clearEffect, comboPopup, animationTick]);
 
   useEffect(() => {
     if (gameOver || isPaused || !currentPiece) return;
