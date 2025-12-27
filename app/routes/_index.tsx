@@ -73,7 +73,6 @@ export default function Index() {
   const [nextPiece, setNextPiece] = useState<number | null>(null);
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(false);
   const [nickname, setNickname] = useState("");
-  const [isSubmittingScore, setIsSubmittingScore] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState<ScoreItem[]>([]);
@@ -332,7 +331,6 @@ export default function Index() {
     setCurrentPiece(null);
     setShowNicknamePrompt(false);
     setNickname("");
-    setIsSubmittingScore(false);
     setScoreSubmitted(false);
     pieceBagRef.current = [];
 
@@ -382,34 +380,30 @@ export default function Index() {
     }
   }, [score, level, lines, combo]);
 
-  const handleNicknameSubmit = useCallback(async () => {
+  const handleNicknameSubmit = useCallback(() => {
     // Prevent duplicate submissions
-    if (isSubmittingScore || scoreSubmitted) return;
+    if (scoreSubmitted) return;
 
     if (!nickname.trim()) {
       alert('Please enter a nickname');
       return;
     }
 
-    setIsSubmittingScore(true);
-    try {
-      await submitScore(nickname.trim(), false);
-    } finally {
-      setIsSubmittingScore(false);
-      setShowNicknamePrompt(false);
-      setScoreSubmitted(true);
-    }
-  }, [nickname, submitScore, isSubmittingScore, scoreSubmitted]);
+    // Submit score asynchronously (non-blocking)
+    setScoreSubmitted(true);
+    setShowNicknamePrompt(false);
+    submitScore(nickname.trim(), false);
+  }, [nickname, submitScore, scoreSubmitted]);
 
   const handleNicknameReject = useCallback(() => {
     // Prevent duplicate submissions
-    if (isSubmittingScore || scoreSubmitted) return;
+    if (scoreSubmitted) return;
 
     setShowNicknamePrompt(false);
     setScoreSubmitted(true);
     // Submit score asynchronously without user notice (backend generates random nickname)
     submitScore('', true);
-  }, [submitScore, isSubmittingScore, scoreSubmitted]);
+  }, [submitScore, scoreSubmitted]);
 
   const fetchLeaderboard = useCallback(async () => {
     const apiUrl = typeof window !== 'undefined' ? window.ENV?.API_URL : '';
@@ -585,32 +579,32 @@ export default function Index() {
               <h1>GAME OVER</h1>
               <p>Score: <span>{score}</span></p>
               <div className="nickname-prompt">
-                <p className="prompt-text">Save your score to the leaderboard?</p>
+                <p className="prompt-text">Save your score to the ranking?</p>
                 <input
                   type="text"
                   placeholder="Enter your nickname"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !isSubmittingScore && !scoreSubmitted) {
+                    if (e.key === 'Enter' && !scoreSubmitted) {
                       handleNicknameSubmit();
                     }
                   }}
                   maxLength={20}
                   autoFocus
-                  disabled={isSubmittingScore || scoreSubmitted}
+                  disabled={scoreSubmitted}
                 />
                 <div className="prompt-buttons">
                   <button
                     onClick={handleNicknameSubmit}
-                    disabled={isSubmittingScore || scoreSubmitted}
+                    disabled={scoreSubmitted}
                     className="save-button"
                   >
-                    {isSubmittingScore ? 'Saving...' : 'Save Score'}
+                    Save Score
                   </button>
                   <button
                     onClick={handleNicknameReject}
-                    disabled={isSubmittingScore || scoreSubmitted}
+                    disabled={scoreSubmitted}
                     className="skip-button"
                   >
                     Skip
@@ -630,7 +624,7 @@ export default function Index() {
             <div className="leaderboard-overlay">
               <div className="leaderboard-modal">
                 <div className="leaderboard-header">
-                  <h2>Leaderboard</h2>
+                  <h2>Ranking</h2>
                   <button className="close-button" onClick={toggleLeaderboard}>×</button>
                 </div>
                 <div className="leaderboard-content">
@@ -697,7 +691,7 @@ export default function Index() {
               Reset Game
             </button>
             <button className="leaderboard-button" onClick={toggleLeaderboard}>
-              Leaderboard
+              Ranking
             </button>
           </div>
         </div>
