@@ -260,9 +260,17 @@ canvas {
     }
 
     .game-title {
-        font-size: 24px;
-        margin-bottom: 6px;
+        font-size: 28px;
+        margin-bottom: 0;
         flex-shrink: 0;
+        position: relative;
+        z-index: 20;
+        padding: 8px 0 4px 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+        width: 100%;
+        text-shadow: 0 0 10px rgba(102, 126, 234, 0.8),
+                     0 0 20px rgba(118, 75, 162, 0.6),
+                     0 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .game-content {
@@ -273,7 +281,7 @@ canvas {
         width: 100%;
         flex: 1;
         overflow: hidden;
-        padding-top: 85px;
+        padding-top: 110px;
     }
 
     .game-area {
@@ -287,7 +295,7 @@ canvas {
     canvas#gameCanvas {
         width: min(calc(100vw - 40px), 320px);
         height: auto;
-        max-height: calc(100dvh - 270px);
+        max-height: calc(100dvh - 290px);
     }
 
     /* Hide desktop side panel on mobile */
@@ -299,7 +307,7 @@ canvas {
     .mobile-top-bar {
         display: flex;
         position: fixed;
-        top: 0;
+        top: 40px;
         left: 0;
         right: 0;
         padding: 8px 8px 12px 8px;
@@ -384,7 +392,7 @@ canvas {
     .mobile-combo-badge {
         display: block;
         position: fixed;
-        top: 80px;
+        top: 115px;
         left: 50%;
         transform: translateX(-50%);
         background: linear-gradient(135deg,
@@ -607,19 +615,24 @@ canvas {
 
 @media (max-width: 480px) {
     .game-title {
-        font-size: 16px;
-        margin-bottom: 3px;
+        font-size: 24px;
+        margin-bottom: 0;
+        padding: 6px 0 3px 0;
+        text-shadow: 0 0 8px rgba(102, 126, 234, 0.8),
+                     0 0 16px rgba(118, 75, 162, 0.6),
+                     0 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .game-content {
-        padding-top: 75px;
+        padding-top: 100px;
     }
 
     canvas#gameCanvas {
-        max-height: calc(100dvh - 250px);
+        max-height: calc(100dvh - 270px);
     }
 
     .mobile-top-bar {
+        top: 35px;
         padding: 6px 6px 10px 6px;
         gap: 4px;
     }
@@ -637,7 +650,7 @@ canvas {
     }
 
     .mobile-combo-badge {
-        top: 70px;
+        top: 105px;
         padding: 6px 16px;
     }
 
