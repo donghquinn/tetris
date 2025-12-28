@@ -290,6 +290,7 @@ canvas {
         align-items: flex-start;
         justify-content: center;
         position: relative;
+        overflow: visible;
     }
 
     canvas#gameCanvas {
@@ -425,15 +426,15 @@ canvas {
     .mobile-next-card {
         display: block;
         position: fixed;
-        bottom: 70px;
-        left: 10px;
+        top: 40px;
+        right: 10px;
         background: linear-gradient(135deg,
             rgba(16, 185, 129, 0.9) 0%,
             rgba(5, 150, 105, 0.9) 100%);
         border: 3px solid rgba(255, 255, 255, 0.4);
         border-radius: 16px;
         padding: 8px;
-        z-index: 10;
+        z-index: 25;
         pointer-events: none;
         box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4),
                     inset 0 1px 1px rgba(255, 255, 255, 0.3);
@@ -523,7 +524,7 @@ canvas {
     }
 
     .mobile-corner-btn.top-right {
-        top: 10px;
+        top: 150px;
         right: 10px;
         background: linear-gradient(135deg,
             rgba(59, 130, 246, 0.9) 0%,
@@ -659,8 +660,8 @@ canvas {
     }
 
     .mobile-next-card {
-        bottom: 60px;
-        left: 8px;
+        top: 35px;
+        right: 8px;
         padding: 6px;
     }
 
@@ -678,6 +679,10 @@ canvas {
         width: 46px;
         height: 46px;
         font-size: 20px;
+    }
+
+    .mobile-corner-btn.top-right {
+        top: 140px;
     }
 
     .game-over {
